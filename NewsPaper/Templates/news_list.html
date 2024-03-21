@@ -1,0 +1,15 @@
+{% extends 'default.html' %}
+{% load news_extras %}
+{% block content %}
+    <h2>Новости ({{ news_items|length }})</h2>
+    <ul>
+        {% for news in news_items %}
+            <li>
+                <h3>{{ news.title }}</h3>
+                <p>{{ news.pub_date|date:"d.m.Y" }}</p>
+                <p>{{ news.content|truncatewords:20 }}</p>
+                <a href="{% url 'news_detail' news.id %}">Подробнее</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends 'default.html' %}
+
+{% block content %}
+    <h2>{{ news_item.title }}</h2>
+    <p>{{ news_item.pub_date|date:"d.m.Y" }}</p>
+    <p>{{ news_item.content }}</p>
+{% endblock %}
