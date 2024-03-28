@@ -1,15 +1,22 @@
 {% extends 'default.html' %}
-{% load news_extras %}
+
 {% block content %}
-    <h2>Новости ({{ news_items|length }})</h2>
-    <ul>
-        {% for news in news_items %}
-            <li>
-                <h3>{{ news.title|censor  }}</h3>
-                <p>{{ news.pub_date|date:"d.m.Y" }}</p>
-                <p>{{ news.content|censor|truncatewords:20 }}</p>
-                <a href="{% url 'news_detail' news.id %}">Подробнее</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <h2>Новости</h2>
+    {% for news in page_obj %}
+
+    {% endfor %}
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">Первая</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+        {% endif %}
+
+        <span class="current-page">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+        {% endif %}
+    </div>
 {% endblock %}

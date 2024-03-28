@@ -62,12 +62,22 @@ class Comment(models.Model):
         self.rating -= 1
         self.save()
 
-from django.db import models
+
 
 class News(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     pub_date = models.DateTimeField()
+
+    def __str__(self):
+        return self.title
+
+from django.db import models
+
+class Article(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    pub_date = models.DateField()
 
     def __str__(self):
         return self.title

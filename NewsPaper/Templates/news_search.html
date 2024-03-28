@@ -1,0 +1,22 @@
+{% extends 'default.html' %}
+
+{% block content %}
+    <h2>Результаты поиска</h2>
+    {% for news in page_obj %}
+        <!-- Отображение новостей -->
+    {% endfor %}
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?query={{ query }}&page=1">Первая</a>
+            <a href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+        {% endif %}
+
+        <span class="current-page">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?query={{ query }}&page={{ page_obj.next_page_number }}">Следующая</a>
+            <a href="?query={{ query }}&page={{ page_obj.paginator.num_pages }}">Последняя</a>
+        {% endif %}
+    </div>
+{% endblock %}
