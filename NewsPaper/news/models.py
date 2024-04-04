@@ -1,5 +1,15 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import Group
+from allauth.account.signals import user_signed_up
+from django.dispatch import receiver
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from .models import Post
+
 
 
 class Author(models.Model):
@@ -63,7 +73,6 @@ class Comment(models.Model):
         self.save()
 
 
-
 class News(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
@@ -72,7 +81,9 @@ class News(models.Model):
     def __str__(self):
         return self.title
 
+
 from django.db import models
+
 
 class Article(models.Model):
     title = models.CharField(max_length=100)
@@ -81,3 +92,47 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    given_name = models.CharField(max_length=255, verbose_name=_('Имя'))
+    surname = models.CharField(max_length=255, verbose_name=_('Фамилия'))
+    bio = models.TextField(blank=True, null=True, verbose_name=_('Биография'))
+    image = models.ImageField(upload_to='uploads/', blank=True, null=True, verbose_name=_('Изображение'))
+
+    def __str__(self):
+        return f"{self.given_name} {self.surname}"
+
+    class Meta:
+        ordering = ['surname', 'given_name']
+
+
+Group.objects.create(name='common')
+Group.objects.create(name='authors')
+
+
+@receiver(user_signed_up)
+def user_signed_up_(request, user, **kwargs):
+    common_group = Group.objects.get(name='common')
+    common_group.user_set.add(user)
+
+
+@login_required
+def become_author(request):
+    authors_group = Group.objects.get(name='authors')
+    authors_group.user_set.add(request.user)
+    return redirect('some-view')
+
+
+content_type = ContentType.objects.get_for_model(Post)
+permission = Permission.objects.create(
+    codename='can_publish',
+    name='Can Publish Posts',
+    content_type=content_type,
+)
+
+authors_group = Group.objects.get(name='authors')
+authors_group.permissions.add(permission)
+
+

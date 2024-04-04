@@ -7,6 +7,8 @@ from .views import NewsDeleteView
 from .views import ArticleCreateView
 from .views import ArticleUpdateView
 from .views import ArticleDeleteView
+from allauth.account.views import LoginView, LogoutView, SignupView, PasswordChangeView
+
 
 urlpatterns = [
     path('news/', news_list, name='news_list'),
@@ -18,4 +20,8 @@ urlpatterns = [
     path('articles/create/', ArticleCreateView.as_view(), name='article_create'),
     path('articles/<int:pk>/edit/', ArticleUpdateView.as_view(), name='article_edit'),
     path('articles/<int:pk>/delete/', ArticleDeleteView.as_view(), name='article_delete'),
+    path('accounts/login/', LoginView.as_view(), name='account_login'),
+    path('accounts/logout/', LogoutView.as_view(), name='account_logout'),
+    path('accounts/signup/', SignupView.as_view(), name='account_signup'),
+    path('accounts/password/change/', PasswordChangeView.as_view(), name='account_change_password'),
 ]

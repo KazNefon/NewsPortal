@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Добро пожаловать на сайт</title>
+</head>
+<body>
+    <h1>Добро пожаловать на сайт</h1>
+
+    {% if user.is_authenticated %}
+        <p>Привет, {{ user.username }}!</p>
+        <p><a href="{% url 'account_logout' %}">Выйти</a></p>
+    {% else %}
+        <p>Пожалуйста, <a href="{% url 'account_login' %}">войдите</a> или <a href="{% url 'account_signup' %}">зарегистрируйтесь</a>.</p>
+    {% endif %}
+</body>
+</html>
