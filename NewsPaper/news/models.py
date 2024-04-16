@@ -8,8 +8,8 @@ from django.dispatch import receiver
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from .models import Post
-
+from django.db.models.signals import post_save
+from django.core.mail import send_mail
 
 
 class Author(models.Model):
@@ -25,6 +25,7 @@ class Author(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    subscribers = models.ManyToManyField(User, related_name='subscribed_categories')
 
 
 class Post(models.Model):
@@ -86,9 +87,10 @@ from django.db import models
 
 
 class Article(models.Model):
-    title = models.CharField(max_length=100)
-    content = models.TextField()
-    pub_date = models.DateField()
+    title = models.CharField(max_length=200)
+    text = models.TextField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='articles')
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -136,3 +138,13 @@ authors_group = Group.objects.get(name='authors')
 authors_group.permissions.add(permission)
 
 
+@receiver(post_save, sender=User)
+def send_welcome_email(sender, instance, created, **kwargs):
+    if created:
+        send_mail(
+            'Добро пожаловать на наш новостной портал!',
+            f'Здравствуйте, {instance.username}! Спасибо за регистрацию.',
+            'your-email@example.com',
+            [instance.email],
+            fail_silently=False,
+        )

@@ -4,12 +4,18 @@ from django.core.paginator import Paginator
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import UpdateView
 from django.views.generic.edit import DeleteView
-from .models import Article
+from .models import Article, Category
 from .models import Profile
 from allauth.account.forms import LoginForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from .models import Post
+from django.shortcuts import redirect
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
+
+
 def news_list(request):
     def news_list(request):
         news_items = News.objects.all().order_by('-pub_date')
@@ -104,9 +110,25 @@ class PostCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     success_url = '/posts/'
     permission_required = '.add_post'
 
+
 class PostUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Post
     fields = ['type', 'title', 'content', 'categories']
     template_name = 'post_form.html'
     success_url = '/posts/'
     permission_required = '.change_post'
+
+
+@login_required
+def subscribe(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    category.subscribers.add(request.user)
+    return redirect('category_detail', category_id=category_id)
+
+
+def send_article_notification(article):
+    subject = article.title
+    for subscriber in article.category.subscribers.all():
+        message = f"Здравствуй, {subscriber.username}. Новая статья в твоём любимом разделе! {article.text[:50]}..."
+        html_message = f'<h1>{article.title}</h1><p>{article.text[:50]}...</p><a href="http://мойадресс.com/articles/{article.id}">Читать далее</a>'
+        send_mail(subject, strip_tags(message), 'from@example.com', [subscriber.email], html_message=html_message)

@@ -24,4 +24,5 @@ urlpatterns = [
     path('accounts/logout/', LogoutView.as_view(), name='account_logout'),
     path('accounts/signup/', SignupView.as_view(), name='account_signup'),
     path('accounts/password/change/', PasswordChangeView.as_view(), name='account_change_password'),
+    path('category/<int:category_id>/subscribe/', subscribe, name='subscribe'),
 ]
