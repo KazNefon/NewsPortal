@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'myapp.apps.MyAppConfig',
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [
@@ -152,5 +154,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@example.com'
-EMAIL_HOST_PASSWORD = 'your-email-password'
+EMAIL_HOST_USER = 'kaz5kaz@mail.ru'
+EMAIL_HOST_PASSWORD = 'kaz5kaz@mail.ru 36446273'

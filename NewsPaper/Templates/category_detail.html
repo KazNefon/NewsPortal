@@ -1,4 +1,6 @@
-<form action="{% url 'subscribe' category.id %}" method="post">
+{% if user.is_authenticated %}
+<form action="{% url 'subscribe_to_category' category.id %}" method="post">
     {% csrf_token %}
     <button type="submit">Подписаться</button>
 </form>
+{% endif %}

@@ -9,12 +9,15 @@ from .models import Profile
 from allauth.account.forms import LoginForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy
 from .models import Post
 from django.shortcuts import redirect
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
-
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+from django.views import generic
+from django.shortcuts import render
+from .signals import send_welcome_email
 
 def news_list(request):
     def news_list(request):
@@ -120,7 +123,7 @@ class PostUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
 
 
 @login_required
-def subscribe(request, category_id):
+def subscribe_to_category(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     category.subscribers.add(request.user)
     return redirect('category_detail', category_id=category_id)
@@ -132,3 +135,14 @@ def send_article_notification(article):
         message = f"Здравствуй, {subscriber.username}. Новая статья в твоём любимом разделе! {article.text[:50]}..."
         html_message = f'<h1>{article.title}</h1><p>{article.text[:50]}...</p><a href="http://мойадресс.com/articles/{article.id}">Читать далее</a>'
         send_mail(subject, strip_tags(message), 'from@example.com', [subscriber.email], html_message=html_message)
+
+
+class SignUpView(generic.CreateView):
+    form_class = UserCreationForm
+    success_url = reverse_lazy('login')
+    template_name = 'signup.html'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        send_welcome_email(self.object)  # Вызов функции отправки приветственного письма
+        return response

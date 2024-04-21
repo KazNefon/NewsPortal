@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings
+from django.shortcuts import redirect
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group
 from allauth.account.signals import user_signed_up
@@ -8,8 +9,8 @@ from django.dispatch import receiver
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from django.db.models.signals import post_save
-from django.core.mail import send_mail
+from django.utils import timezone
+from datetime import timedelta
 
 
 class Author(models.Model):
@@ -24,8 +25,8 @@ class Author(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    subscribers = models.ManyToManyField(User, related_name='subscribed_categories')
+    name = models.CharField(max_length=100)
+    subscribers = models.ManyToManyField(User, related_name='subscribed_categories', blank=True)
 
 
 class Post(models.Model):
@@ -86,14 +87,26 @@ class News(models.Model):
 from django.db import models
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
 class Article(models.Model):
     title = models.CharField(max_length=200)
     text = models.TextField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='articles')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.title
+    def save(self, *args, **kwargs):
+        # Проверяем количество статей, опубликованных пользователем за последние 24 часа
+        today = timezone.now()
+        yesterday = today - timedelta(days=1)
+        num_articles_today = Article.objects.filter(author=self.author, created_at__range=(yesterday, today)).count()
+
+        if num_articles_today < 3:
+            super().save(*args, **kwargs)
+        else:
+            raise ValueError("Вы не можете публиковать более трех новостей в сутки.")
 
 
 class Profile(models.Model):
@@ -138,13 +151,3 @@ authors_group = Group.objects.get(name='authors')
 authors_group.permissions.add(permission)
 
 
-@receiver(post_save, sender=User)
-def send_welcome_email(sender, instance, created, **kwargs):
-    if created:
-        send_mail(
-            'Добро пожаловать на наш новостной портал!',
-            f'Здравствуйте, {instance.username}! Спасибо за регистрацию.',
-            'your-email@example.com',
-            [instance.email],
-            fail_silently=False,
-        )
