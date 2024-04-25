@@ -91,6 +91,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
 
 class Article(models.Model):
+    objects = None
     title = models.CharField(max_length=200)
     text = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
